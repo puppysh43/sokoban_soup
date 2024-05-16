@@ -6,3 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+bracket-lib = "0.8.7"
+eframe = "0.27.2"
+egui = {version = "0.27.2", features = ["serde"]}
