@@ -1,4 +1,5 @@
 mod editor_systems;
+mod game_systems;
 mod map;
 mod player;
 
@@ -9,7 +10,6 @@ mod prelude {
     pub const SCREEN_HEIGHT: i32 = 17;
     pub use crate::map::*;
     pub use crate::player::*;
-    pub use crate::EditorState;
 }
 
 use prelude::*;
@@ -46,16 +46,29 @@ impl GameState for EditorState {
 }
 
 pub struct SokobanState {
+    key: Option<VirtualKeyCode>,
+    control: bool,
     map: Map,
     player: Player,
-    //world: World,
+    movecount: u32,
+    moves: Vec<Move>,
+}
+
+pub struct Move {
+    mapdata: Map,
+    player: Point,
+    movecount: u32,
 }
 
 impl SokobanState {
     fn new() -> Self {
         Self {
+            key: None,
+            control: false,
             map: Map::new(),
             player: Player::new(Point::new(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)),
+            movecount: 0,
+            moves: Vec::new(),
         }
     }
 }
@@ -63,6 +76,8 @@ impl SokobanState {
 impl GameState for SokobanState {
     fn tick(&mut self, ctx: &mut BTerm) {
         ctx.cls();
+        (self.key, self.control) = (ctx.key, ctx.control);
+        game_systems::run_systems(self);
         self.player.update(ctx, &self.map);
         self.map.render(ctx);
         self.player.render(ctx);
