@@ -1,27 +1,57 @@
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-
+mod editor_systems;
 mod map;
 mod player;
 
 mod prelude {
     pub use ::bracket_lib::prelude::*;
-    pub const SCREEN_WIDTH: i32 = 80;
-    pub const SCREEN_HEIGHT: i32 = 50;
+    //screen size
+    pub const SCREEN_WIDTH: i32 = 19;
+    pub const SCREEN_HEIGHT: i32 = 17;
     pub use crate::map::*;
     pub use crate::player::*;
+    pub use crate::EditorState;
 }
 
 use prelude::*;
 
 use eframe::egui;
+pub struct EditorState {
+    map: Map,
+    cursor: Point,
+    key: Option<VirtualKeyCode>,
+    shift: bool,
+    control: bool,
+    brush_tile: Option<TileType>,
+}
+impl EditorState {
+    fn new() -> Self {
+        Self {
+            map: Map::new(),
+            cursor: Point::new(0, 0),
+            key: None,
+            shift: false,
+            control: false,
+            brush_tile: None,
+        }
+    }
+}
 
-struct State {
+impl GameState for EditorState {
+    fn tick(&mut self, ctx: &mut BTerm) {
+        //clear the screen
+        ctx.cls();
+        //capture user input
+        (self.key, self.shift, self.control) = (ctx.key, ctx.shift, ctx.control);
+    }
+}
+
+pub struct SokobanState {
     map: Map,
     player: Player,
     //world: World,
 }
 
-impl State {
+impl SokobanState {
     fn new() -> Self {
         Self {
             map: Map::new(),
@@ -30,7 +60,7 @@ impl State {
     }
 }
 
-impl GameState for State {
+impl GameState for SokobanState {
     fn tick(&mut self, ctx: &mut BTerm) {
         ctx.cls();
         self.player.update(ctx, &self.map);
@@ -50,6 +80,7 @@ fn main() -> Result<(), eframe::Error> {
         Box::new(|cc| Box::<SokobanSoupLauncher>::default()),
     )
 }
+#[derive(PartialEq)]
 enum Gamemode {
     InGame,
     Editor,
@@ -79,10 +110,32 @@ impl eframe::App for SokobanSoupLauncher {
                 ui.text_edit_singleline(&mut self.name)
                     .labelled_by(name_label.id);
             });
-            if ui.button("Play Game").clicked() {
+            let gamemode_label = ui.label("Select Gamemode");
+            if ui
+                .add(egui::RadioButton::new(
+                    self.gamemode == Gamemode::InGame,
+                    "Sokoban Game",
+                ))
+                .clicked()
+            {
+                self.gamemode = Gamemode::InGame
+            }
+            if ui
+                .add(egui::RadioButton::new(
+                    self.gamemode == Gamemode::Editor,
+                    "Level Editor",
+                ))
+                .clicked()
+            {
+                self.gamemode = Gamemode::Editor
+            }
+            if ui.button("Launch").clicked() {
                 if !self.launched {
+                    match self.gamemode {
+                        Gamemode::InGame => launchgame().unwrap(),
+                        Gamemode::Editor => launcheditor().unwrap(),
+                    }
                     println!("{} has launched Sokoban Soup!", self.name);
-                    launchgame().unwrap();
                 }
                 self.launched = true;
             }
@@ -91,10 +144,32 @@ impl eframe::App for SokobanSoupLauncher {
 }
 
 fn launchgame() -> BError {
-    let ctx = BTermBuilder::simple80x50()
+    let ctx = BTermBuilder::new()
         .with_title("Sokoban Soup")
         .with_fps_cap(30.0)
+        .with_fitscreen(true)
+        .with_dimensions(SCREEN_WIDTH, SCREEN_HEIGHT)
+        .with_tile_dimensions(32, 32)
+        .with_resource_path("resources/")
+        .with_font("tileset.png", 32, 32)
+        .with_simple_console(SCREEN_WIDTH, SCREEN_HEIGHT, "tileset.png")
         .build()?;
 
-    main_loop(ctx, State::new())
+    main_loop(ctx, SokobanState::new())
+}
+
+fn launcheditor() -> BError {
+    let ctx = BTermBuilder::new()
+        .with_title("Level Edtor")
+        .with_fps_cap(30.0)
+        .with_fitscreen(true)
+        .with_dimensions(SCREEN_WIDTH, SCREEN_HEIGHT)
+        .with_tile_dimensions(32, 32)
+        .with_resource_path("resources/")
+        .with_font("tileset.png", 32, 32)
+        .with_simple_console(SCREEN_WIDTH, SCREEN_HEIGHT, "tileset.png")
+        .with_simple_console_no_bg(SCREEN_WIDTH, SCREEN_HEIGHT, "tileset.png")
+        .build()?;
+
+    main_loop(ctx, EditorState::new())
 }
