@@ -32,10 +32,10 @@ pub fn parse_input(state: &mut EditorState, command: &mut Command) {
                 state.brush_tile = Some(TileType::Floor);
                 Point::new(0, 0)
             }
-            VirtualKeyCode::Key3 => {
-                state.brush_tile = Some(TileType::Crate);
-                Point::new(0, 0)
-            }
+            // VirtualKeyCode::Key3 => {
+            // state.brush_tile = Some(TileType::Crate);
+            // Point::new(0, 0)
+            // }
             VirtualKeyCode::Key4 => {
                 state.brush_tile = Some(TileType::LoadingSquare);
                 Point::new(0, 0)

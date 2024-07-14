@@ -6,7 +6,6 @@ const NUM_TILES: usize = (SCREEN_WIDTH * SCREEN_HEIGHT) as usize;
 pub enum TileType {
     Wall,
     Floor,
-    Crate,
     LoadingSquare,
 }
 
@@ -30,7 +29,9 @@ impl Map {
     }
 
     pub fn can_enter_tile(&self, point: Point) -> bool {
-        self.in_bounds(point) && self.tiles[map_idx(point.x, point.y)] == TileType::Floor
+        self.in_bounds(point)
+            && (self.tiles[map_idx(point.x, point.y)] == TileType::Floor
+                || self.tiles[map_idx(point.x, point.y)] == TileType::LoadingSquare)
     }
 
     pub fn render(&self, ctx: &mut BTerm) {
@@ -43,9 +44,6 @@ impl Map {
                     }
                     TileType::Wall => {
                         ctx.set(x, y, GREEN, BLACK, to_cp437('#'));
-                    }
-                    TileType::Crate => {
-                        ctx.set(x, y, BROWN1, BLACK, to_cp437('X'));
                     }
                     TileType::LoadingSquare => {
                         ctx.set(x, y, BLUE, BLACK, to_cp437('O'));
