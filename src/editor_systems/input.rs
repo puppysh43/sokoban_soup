@@ -1,3 +1,4 @@
+/*
 use crate::editor_systems::Command;
 use crate::prelude::*;
 //will maybe need to add control state variable later on?
@@ -49,3 +50,4 @@ pub fn parse_input(state: &mut EditorState, command: &mut Command) {
         }
     };
 }
+*/

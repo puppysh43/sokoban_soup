@@ -1,3 +1,4 @@
+/*
 use crate::prelude::*;
 mod input;
 
@@ -12,3 +13,4 @@ pub fn run_systems(state: &mut EditorState) {
     //player input function
     //map editor
 }
+*/

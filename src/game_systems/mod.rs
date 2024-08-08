@@ -94,5 +94,6 @@ fn render(state: &mut SokobanState) {
             }
         }
     }
+
     draw_batch.submit(0).expect("Batch Error");
 }
