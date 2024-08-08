@@ -9,7 +9,7 @@ pub enum MessageOfIntent {
     // Rewind,
     // Forward,
 }
-pub fn run_systems(state: &mut SokobanState) {
+pub fn run_systems(state: &mut SokobanState, ctx: &mut BTerm) {
     //get player input as a message of intent
     let moi = input::player_input(state);
     //process message of intent
@@ -18,7 +18,7 @@ pub fn run_systems(state: &mut SokobanState) {
         MessageOfIntent::MovePlayer(delta) => process_move(state, delta),
         MessageOfIntent::Quit => quit_game(state),
     }
-    render(state);
+    render(state, ctx);
 
     //check gamestate for victory condition if so do victory state
 }
@@ -72,9 +72,9 @@ fn quit_game(state: &mut SokobanState) {
 //quit w/ ctrl+q
 //go forward and backwards in turn w/ ctrl+arrow keys
 //(for compatability issues make sure to "erase" the rest of the "timeline")
-fn render(state: &mut SokobanState) {
-    let mut draw_batch = DrawBatch::new();
-    draw_batch.target(0);
+fn render(state: &mut SokobanState, ctx: &mut BTerm) {
+    ctx.set_active_console(0);
+    //first render the game map
     for y in 0..SCREEN_HEIGHT {
         for x in 0..SCREEN_WIDTH {
             let pt = Point::new(x, y);
@@ -82,18 +82,24 @@ fn render(state: &mut SokobanState) {
             if state.map.in_bounds(pt) {
                 match state.map.tiles[idx] {
                     TileType::Wall => {
-                        draw_batch.set(pt, ColorPair::new(GRAY, BLACK), to_cp437('#'));
+                        ctx.set(x, y, GRAY, BLACK, to_cp437('#'));
                     }
                     TileType::Floor => {
-                        draw_batch.set(pt, ColorPair::new(LIGHT_GRAY, BLACK), to_cp437('.'));
+                        // draw_batch.set(pt, ColorPair::new(LIGHT_GRAY, BLACK), to_cp437('.'));
+                        ctx.set(x, y, LIGHT_GRAY, BLACK, to_cp437('.'));
                     }
                     TileType::LoadingSquare => {
-                        draw_batch.set(pt, ColorPair::new(ORANGE, BLACK), to_cp437('O'));
+                        // draw_batch.set(pt, ColorPair::new(ORANGE, BLACK), to_cp437('O'));
+                        ctx.set(x, y, ORANGE, BLACK, to_cp437('O'));
                     }
                 }
             }
         }
     }
-
-    draw_batch.submit(0).expect("Batch Error");
+    //then render the crates
+    for crate_pos in state.crates.keys() {
+        ctx.set(crate_pos.x, crate_pos.y, YELLOW, BLACK, to_cp437('X'));
+    }
+    //then render the player
+    ctx.set(state.player.x, state.player.y, GREEN, BLACK, to_cp437('@'));
 }

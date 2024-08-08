@@ -1,7 +1,6 @@
 mod editor_systems;
 mod game_systems;
 mod map;
-mod player;
 mod sokoban_state;
 
 mod prelude {

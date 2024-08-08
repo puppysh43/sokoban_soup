@@ -14,6 +14,11 @@ pub struct SokobanState {
 pub struct Crate {
     pub id: u32,
 }
+impl Crate {
+    pub fn new(id: u32) -> Self {
+        Crate { id }
+    }
+}
 
 pub struct Move {
     pub player: Point,
@@ -68,7 +73,8 @@ fn read_data_from_string(path: String) -> (Map, Point, HashMap<Point, Crate>) {
             }
             'X' => {
                 map.tiles[index as usize] = TileType::Floor;
-                // crates.insert(, )
+                crates.insert(index_to_point(index), Crate::new(crate_num));
+                crate_num += 1;
                 //need to get an index to point function working
             }
             'O' => {
@@ -76,7 +82,7 @@ fn read_data_from_string(path: String) -> (Map, Point, HashMap<Point, Crate>) {
             }
             '@' => {
                 map.tiles[index as usize] = TileType::Floor;
-                //set player spawnpoint using index to point function
+                player_spawn = index_to_point(index);
             }
             _ => {
                 println!("Unrecognized character in raw map data")
@@ -94,9 +100,16 @@ impl GameState for SokobanState {
         //get the current input for the tick
         (self.key, self.control) = (ctx.key, ctx.control);
         //run all the game systems
-        crate::game_systems::run_systems(self);
+        crate::game_systems::run_systems(self, ctx);
         if self.quitting {
             ctx.quit();
         }
     }
+}
+
+pub fn index_to_point(idx: usize) -> Point {
+    let index = idx as i32;
+    let x = index % SCREEN_WIDTH;
+    let y = index / SCREEN_WIDTH;
+    Point::new(x, y)
 }
