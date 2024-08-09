@@ -40,18 +40,30 @@ fn process_move(state: &mut SokobanState, delta: Point) {
     }
     //if there is a crate where the player is apply the delta to the crate position and see if
     //the crate can also safely move to where it would go
-    if state.map.can_enter_tile(new_player_pos) && moving_crate.is_some() {
-        if state.map.can_enter_tile(Point::new(
-            new_player_pos.x + delta.x,
-            new_player_pos.y + delta.y,
-        )) {
-            //if so move the player and adjust the crate position accordingly
-            state.player = new_player_pos;
-            state.crates.insert(
-                Point::new(new_player_pos.x + delta.x, new_player_pos.y + delta.y),
-                moving_crate.unwrap(),
+    if moving_crate.is_some() {
+        if state.map.can_enter_tile(new_player_pos) {
+            let new_crate_pos = Point::new(new_player_pos.x + delta.x, new_player_pos.y + delta.y);
+            println!(
+                "new_player_pos: x-{} y-{}, new_crate_pos: x-{} y-{}",
+                new_player_pos.x, new_player_pos.y, new_crate_pos.x, new_crate_pos.y
             );
-            has_moved = true;
+            if state.map.can_enter_tile(new_crate_pos) && !state.crates.contains_key(&new_crate_pos)
+            {
+                println!(
+                    "can_enter_tile = {}",
+                    state.map.can_enter_tile(new_crate_pos)
+                );
+                //if so move the player and adjust the crate position accordingly
+                state.player = new_player_pos;
+                state.crates.insert(
+                    Point::new(new_player_pos.x + delta.x, new_player_pos.y + delta.y),
+                    moving_crate.unwrap(),
+                );
+                has_moved = true;
+            } else {
+                state.crates.insert(new_player_pos, moving_crate.unwrap());
+                //do not move the player at all
+            }
         }
         //if there is no crate being moved just make sure the player can move and move them!
     } else if state.map.can_enter_tile(new_player_pos) && moving_crate.is_none() {
@@ -67,11 +79,6 @@ fn process_move(state: &mut SokobanState, delta: Point) {
 fn quit_game(state: &mut SokobanState) {
     state.quitting = true;
 }
-//player input function will have movement w/ arrow keys
-//restart level w/ ctrl+r
-//quit w/ ctrl+q
-//go forward and backwards in turn w/ ctrl+arrow keys
-//(for compatability issues make sure to "erase" the rest of the "timeline")
 fn render(state: &mut SokobanState, ctx: &mut BTerm) {
     ctx.set_active_console(0);
     //first render the game map
