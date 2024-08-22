@@ -33,23 +33,4 @@ impl Map {
             && (self.tiles[map_idx(point.x, point.y)] == TileType::Floor
                 || self.tiles[map_idx(point.x, point.y)] == TileType::LoadingSquare)
     }
-
-    pub fn render(&self, ctx: &mut BTerm) {
-        for y in 0..SCREEN_HEIGHT {
-            for x in 0..SCREEN_WIDTH {
-                let idx = map_idx(x, y);
-                match self.tiles[idx] {
-                    TileType::Floor => {
-                        ctx.set(x, y, YELLOW, BLACK, to_cp437('.'));
-                    }
-                    TileType::Wall => {
-                        ctx.set(x, y, GREEN, BLACK, to_cp437('#'));
-                    }
-                    TileType::LoadingSquare => {
-                        ctx.set(x, y, BLUE, BLACK, to_cp437('O'));
-                    }
-                }
-            }
-        }
-    }
 }
